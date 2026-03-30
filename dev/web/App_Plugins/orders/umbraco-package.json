@@ -1,0 +1,33 @@
+{
+  "$schema": "../../umbraco-package-schema.json",
+  "name": "Madbestilling Orders",
+  "version": "1.0.0",
+  "extensions": [
+    {
+      "type": "section",
+      "alias": "Madbestilling.Section.Orders",
+      "name": "Bestillinger",
+      "meta": {
+        "label": "Bestillinger",
+        "pathname": "bestillinger"
+      }
+    },
+    {
+      "type": "dashboard",
+      "alias": "Madbestilling.Dashboard.Orders",
+      "name": "Ordrer",
+      "elementName": "orders-dashboard",
+      "js": "/App_Plugins/orders/orders-dashboard.js",
+      "meta": {
+        "label": "Ordrer",
+        "pathname": "bestillinger"
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.SectionAlias",
+          "match": "Madbestilling.Section.Orders"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,226 @@
+@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = Model.Value<string>("heroTitle") ?? Model.Name;
+
+    var heroTitle       = Model.Value<string>("heroTitle") ?? "Madbestilling";
+    var heroSubtitle    = Model.Value<string>("heroSubtitle") ?? "";
+    var heroDescription = Model.Value<string>("heroDescription") ?? "";
+
+    var foodItems = Model.Children?.Where(c => c.IsVisible()) ?? Enumerable.Empty<IPublishedContent>();
+}
+
+<div class="grid grid-cols-[1fr_300px] gap-5 max-w-[1200px] mx-auto px-5 py-6 items-start max-lg:grid-cols-1">
+
+    <!-- ═══════════════════════════════════════ MAIN ══ -->
+    <main>
+
+        <!-- Hero -->
+        <section class="relative overflow-hidden bg-primary rounded-[18px] p-10 mb-5 border-b-4 border-accent">
+            <div class="absolute top-5 right-36 text-[2.4rem] text-white/10 select-none pointer-events-none">🎉</div>
+            <div class="absolute top-3 right-10 text-[3.2rem] text-white/10 select-none pointer-events-none">♪</div>
+            <div class="absolute bottom-6 right-16 text-[2.8rem] text-white/10 select-none pointer-events-none">☀</div>
+
+            <p class="text-xs font-bold tracking-[.12em] text-accent uppercase mb-1.5">VELKOMMEN TIL</p>
+            <h1 class="text-5xl font-black text-white leading-[1.05] mb-2.5">@heroTitle</h1>
+            @if (!string.IsNullOrWhiteSpace(heroSubtitle))
+            {
+                <p class="text-base text-white/85 mb-4">@heroSubtitle</p>
+            }
+            @if (!string.IsNullOrWhiteSpace(heroDescription))
+            {
+                <p class="text-sm text-white/70 leading-relaxed max-w-[560px]">@heroDescription</p>
+            }
+        </section>
+
+        <!-- Food grid -->
+        <section class="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-5">
+            @foreach (var item in foodItems)
+            {
+                var name        = item.Name ?? "";
+                var priceRaw    = item.Value<string>("price") ?? "0";
+                var price       = decimal.TryParse(priceRaw, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var parsedPrice) ? parsedPrice : 0m;
+                var description = item.Value<string>("description") ?? "";
+                var image       = item.Value<IPublishedContent>("image");
+                var imageUrl    = image?.Url() ?? "/img/placeholder-food.jpg";
+                var itemId      = item.Key.ToString();
+
+                <article class="group bg-white rounded-[18px] shadow-sm overflow-hidden flex flex-col"
+                         data-id="@itemId"
+                         data-name="@Html.Encode(name)"
+                         data-price="@price.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)"
+                         data-image="@imageUrl">
+                    <div class="w-full aspect-[4/3] overflow-hidden bg-app-bg">
+                        <img class="w-full h-full object-cover block transition-transform duration-300 group-hover:scale-105"
+                             src="@imageUrl" alt="@name" />
+                    </div>
+                    <div class="p-5 flex flex-col flex-1 gap-2.5">
+                        <div class="flex justify-between items-start gap-2">
+                            <h2 class="text-lg font-extrabold leading-tight text-app-text">@name</h2>
+                            <div class="text-2xl font-extrabold text-price leading-[1.1] text-right whitespace-nowrap shrink-0">
+                                @price.ToString("N2", new System.Globalization.CultureInfo("da-DK"))
+                                <span class="block text-[.7rem] font-semibold">kr.</span>
+                            </div>
+                        </div>
+                        <p class="text-xs text-gray-500 leading-relaxed flex-1">@description</p>
+                        <button data-add-btn
+                                class="flex items-center justify-center gap-2 bg-primary hover:bg-primary-hover text-white rounded-full text-sm font-bold py-3 px-5 w-full transition-colors active:scale-[.98]"
+                                onclick="FoodOrder.add(this.closest('[data-id]'))">
+                            <span class="text-lg leading-none font-light">+</span>
+                            Tilføj til bestilling
+                        </button>
+                    </div>
+                </article>
+            }
+        </section>
+
+    </main>
+
+    <!-- ═══════════════════════════════════════ SIDEBAR ══ -->
+    <aside class="sticky top-6 max-lg:order-first">
+        <div class="bg-white rounded-[18px] shadow-sm p-5 flex flex-col gap-4">
+
+            <header class="flex items-center gap-3 pb-3.5 border-b border-gray-200">
+                <span class="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center text-primary shrink-0" aria-hidden="true">
+                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none">
+                        <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                        <line x1="3" y1="6" x2="21" y2="6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                        <path d="M16 10a4 4 0 01-8 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </span>
+                <h2 class="text-base font-black tracking-[.08em] text-app-text">BESTILLING</h2>
+            </header>
+
+            <ul class="flex flex-col gap-0" id="cartList"></ul>
+            <p class="text-xs text-gray-400 text-center py-2" id="cartEmpty">Din bestilling er tom.</p>
+
+            <div class="flex flex-col gap-2 pt-3 border-t border-gray-200" id="cartTotals" hidden>
+                <div class="flex justify-between text-[.7rem] font-semibold tracking-[.06em] text-gray-400 uppercase">
+                    <span>Subtotal</span>
+                    <span id="cartSubtotal">0,00 KR.</span>
+                </div>
+                <div class="flex justify-between items-baseline font-bold tracking-[.04em]">
+                    <span class="text-sm">TOTAL</span>
+                    <strong class="text-[1.9rem] font-black text-price underline underline-offset-4 leading-none" id="cartTotal">
+                        0,00<span class="text-sm font-semibold"> kr.</span>
+                    </strong>
+                </div>
+            </div>
+
+            <a href="/checkout"
+               id="checkoutBtn"
+               hidden
+               class="flex items-center justify-center gap-2 bg-primary hover:bg-primary-hover text-white rounded-full text-sm font-bold py-3 px-5 w-full transition-colors">
+                <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none">
+                    <rect x="2" y="5" width="20" height="14" rx="2" stroke="currentColor" stroke-width="1.8"/>
+                    <path d="M2 10h20" stroke="currentColor" stroke-width="1.8"/>
+                </svg>
+                Gå til betaling
+            </a>
+
+        </div>
+    </aside>
+
+</div>
+
+<!-- Cart item DOM template (Tailwind scans these classes) -->
+<template id="cartItemTpl">
+    <li class="flex items-center gap-2.5 py-3 border-b border-gray-100 last:border-0 last:pb-0 first:pt-0">
+        <img class="w-11 h-11 rounded-xl object-cover shrink-0" />
+        <div class="flex flex-col flex-1 min-w-0">
+            <span class="text-[.8rem] font-bold truncate" data-name></span>
+            <span class="text-[.65rem] text-gray-400" data-qty></span>
+        </div>
+        <span class="text-[.8rem] font-bold text-price whitespace-nowrap" data-price></span>
+        <button class="text-gray-300 hover:text-red-500 transition-colors text-base px-1 rounded" aria-label="Fjern" data-remove>×</button>
+    </li>
+</template>
+
+@section Scripts {
+<script>
+const FoodOrder = (() => {
+    const STORAGE_KEY = 'fo_cart';
+    let cart = load();
+
+    function load() {
+        try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+        catch { return []; }
+    }
+
+    function save() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(cart));
+    }
+
+    function formatDKK(amount) {
+        return amount.toLocaleString('da-DK', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function render() {
+        const list       = document.getElementById('cartList');
+        const empty      = document.getElementById('cartEmpty');
+        const totals     = document.getElementById('cartTotals');
+        const checkout   = document.getElementById('checkoutBtn');
+        const subtotalEl = document.getElementById('cartSubtotal');
+        const totalEl    = document.getElementById('cartTotal');
+        const tpl        = document.getElementById('cartItemTpl');
+
+        list.innerHTML = '';
+
+        if (cart.length === 0) {
+            empty.hidden    = false;
+            totals.hidden   = true;
+            checkout.hidden = true;
+            return;
+        }
+
+        empty.hidden    = true;
+        totals.hidden   = false;
+        checkout.hidden = false;
+
+        let total = 0;
+
+        cart.forEach(item => {
+            total += item.price * item.qty;
+            const fragment = tpl.content.cloneNode(true);
+            const li  = fragment.querySelector('li');
+            const img = fragment.querySelector('img');
+            img.src = item.image;
+            img.alt = item.name;
+            fragment.querySelector('[data-name]').textContent = item.name;
+            fragment.querySelector('[data-qty]').textContent  = item.qty + ' stk.';
+            fragment.querySelector('[data-price]').textContent = formatDKK(item.price * item.qty) + ' kr.';
+            fragment.querySelector('[data-remove]').addEventListener('click', () => remove(item.id));
+            li.dataset.id = item.id;
+            list.appendChild(fragment);
+        });
+
+        subtotalEl.textContent = formatDKK(total) + ' KR.';
+        totalEl.innerHTML      = formatDKK(total) + '<span class="text-sm font-semibold"> kr.</span>';
+    }
+
+    function add(cardEl) {
+        const { id, name, price, image } = cardEl.dataset;
+        const existing = cart.find(i => i.id === id);
+        if (existing) {
+            existing.qty++;
+        } else {
+            cart.push({ id, name, price: parseFloat(price), image, qty: 1 });
+        }
+        save();
+        render();
+        const btn = cardEl.querySelector('[data-add-btn]');
+        btn.classList.add('!bg-green-600');
+        setTimeout(() => btn.classList.remove('!bg-green-600'), 600);
+    }
+
+    function remove(id) {
+        cart = cart.filter(i => i.id !== id);
+        save();
+        render();
+    }
+
+    render();
+    return { add, remove };
+})();
+</script>
+}

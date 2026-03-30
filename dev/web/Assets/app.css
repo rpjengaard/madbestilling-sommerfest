@@ -1,0 +1,23 @@
+@import "tailwindcss";
+
+/* Tell Tailwind where to scan for class names */
+@source "../Views/**/*.cshtml";
+
+/* ── Brand tokens ─────────────────────────────────────────── */
+@theme {
+  --color-primary:       #2d4b8a;
+  --color-primary-hover: #1e3870;
+  --color-price:         #2a52cc;
+  --color-accent:        #f4c200;
+  --color-app-bg:        #eef0f4;
+  --color-app-text:      #1a1a2e;
+}
+
+/* ── Base ─────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background-color: var(--color-app-bg);
+  color: var(--color-app-text);
+}
