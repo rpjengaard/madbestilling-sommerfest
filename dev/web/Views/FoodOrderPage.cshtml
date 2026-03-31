@@ -1,35 +1,55 @@
 @inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage
 @{
     Layout = "~/Views/Shared/_Layout.cshtml";
-    ViewData["Title"] = Model.Value<string>("heroTitle") ?? Model.Name;
+    ViewData["Title"] = Model.Value<string>("headline") ?? Model.Name;
 
-    var heroTitle       = Model.Value<string>("heroTitle") ?? "Madbestilling";
-    var heroSubtitle    = Model.Value<string>("heroSubtitle") ?? "";
-    var heroDescription = Model.Value<string>("heroDescription") ?? "";
+    var subHeadline = Model.Value<string>("subHeadline") ?? "VELKOMMEN TIL";
+    var headline    = Model.Value<string>("headline") ?? "Madbestilling";
+    var intro       = Model.Value<string>("intro") ?? "Til sommerfestival 2026 på Sdr. Bjert Skole";
+    var text        = Model.Value<string>("text");
 
     var foodItems = Model.Children?.Where(c => c.IsVisible()) ?? Enumerable.Empty<IPublishedContent>();
 }
-
 <div class="grid grid-cols-[1fr_300px] gap-5 max-w-[1200px] mx-auto px-5 py-6 items-start max-lg:grid-cols-1">
 
     <!-- ═══════════════════════════════════════ MAIN ══ -->
     <main>
 
         <!-- Hero -->
-        <section class="relative overflow-hidden bg-primary rounded-[18px] p-10 mb-5 border-b-4 border-accent">
-            <div class="absolute top-5 right-36 text-[2.4rem] text-white/10 select-none pointer-events-none">🎉</div>
-            <div class="absolute top-3 right-10 text-[3.2rem] text-white/10 select-none pointer-events-none">♪</div>
-            <div class="absolute bottom-6 right-16 text-[2.8rem] text-white/10 select-none pointer-events-none">☀</div>
+        <section class="relative overflow-hidden bg-primary rounded-[18px] p-10 mb-5 border-b-4 border-accent"
+                 style="background-image: radial-gradient(rgba(255,255,255,0.07) 1px, transparent 1px); background-size: 18px 18px;">
 
-            <p class="text-xs font-bold tracking-[.12em] text-accent uppercase mb-1.5">VELKOMMEN TIL</p>
-            <h1 class="text-5xl font-black text-white leading-[1.05] mb-2.5">@heroTitle</h1>
-            @if (!string.IsNullOrWhiteSpace(heroSubtitle))
+            <!-- Activity figure icon (right side, clear of text) -->
+            <div class="absolute select-none pointer-events-none" style="top: 0.5rem; right: 9rem; color: rgba(255,255,255,0.13);">
+                <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24" fill="currentColor">
+                    <circle cx="17" cy="2" r="1.5"/>
+                    <path d="M14.12 8.5L12 10.5 9.5 8C8.67 7.17 7.5 7 6.5 7.5L3 9l1 2 3-1.5 2.07 2.07L7 16h2l1.5-3.5 2 2V22h2v-8.5l-1.5-1.5 2-2 1 1.5 3 .5V10l-3-.5-1.88-1z"/>
+                </svg>
+            </div>
+
+            <!-- Music note icon (top right) -->
+            <div class="absolute select-none pointer-events-none" style="top: 1.2rem; right: 2rem; color: rgba(255,255,255,0.2);">
+                <svg xmlns="http://www.w3.org/2000/svg" width="52" height="52" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3z"/>
+                </svg>
+            </div>
+
+            <!-- Sun icon (right side, middle) -->
+            <div class="absolute select-none pointer-events-none" style="bottom: 1.5rem; right: 2.5rem; color: rgba(255,255,255,0.2);">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 7a5 5 0 1 0 0 10A5 5 0 0 0 12 7zm0-5a1 1 0 0 1 1 1v1a1 1 0 0 1-2 0V3a1 1 0 0 1 1-1zm0 17a1 1 0 0 1 1 1v1a1 1 0 0 1-2 0v-1a1 1 0 0 1 1-1zM4.22 4.22a1 1 0 0 1 1.42 0l.7.7a1 1 0 0 1-1.42 1.42l-.7-.7a1 1 0 0 1 0-1.42zm13.44 13.44a1 1 0 0 1 1.41 0l.71.7a1 1 0 0 1-1.41 1.42l-.71-.7a1 1 0 0 1 0-1.42zM2 12a1 1 0 0 1 1-1h1a1 1 0 0 1 0 2H3a1 1 0 0 1-1-1zm18 0a1 1 0 0 1 1-1h1a1 1 0 0 1 0 2h-1a1 1 0 0 1-1-1zM4.22 19.78a1 1 0 0 1 0-1.42l.7-.7a1 1 0 1 1 1.42 1.41l-.7.71a1 1 0 0 1-1.42 0zm13.44-13.44a1 1 0 0 1 0-1.42l.7-.7a1 1 0 1 1 1.42 1.42l-.71.7a1 1 0 0 1-1.41 0z"/>
+                </svg>
+            </div>
+
+            <p class="text-xs font-bold tracking-[.12em] text-accent uppercase mb-1.5">@subHeadline</p>
+            <h1 class="font-black text-white leading-none mb-2.5" style="font-size: 5rem; font-family: 'Barlow', sans-serif; font-weight: 800;">@headline</h1>
+            @if (!string.IsNullOrWhiteSpace(intro))
             {
-                <p class="text-base text-white/85 mb-4">@heroSubtitle</p>
+                <p class="text-xl font-semibold text-white mb-4">@intro</p>
             }
-            @if (!string.IsNullOrWhiteSpace(heroDescription))
+            @if (!string.IsNullOrWhiteSpace(text))
             {
-                <p class="text-sm text-white/70 leading-relaxed max-w-[560px]">@heroDescription</p>
+                <div class="rte text-sm text-white/70 leading-relaxed max-w-[560px]">@Html.Raw(text)</div>
             }
         </section>
 
