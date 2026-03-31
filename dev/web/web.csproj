@@ -9,6 +9,7 @@
   <ItemGroup>
     <PackageReference Include="Umbraco.Cms" Version="17.2.2" />
     <PackageReference Include="Umbraco.Cms.DevelopmentMode.Backoffice" Version="17.2.2" />
+    <PackageReference Include="uSync" Version="17.0.4" />
   </ItemGroup>
 
   <ItemGroup>
@@ -27,8 +28,7 @@
   </PropertyGroup>
 
   <Target Name="BuildTailwind" BeforeTargets="Build">
-    <Exec Command="bash -c 'export PATH=&quot;$HOME/.nvm/versions/node/v22.19.0/bin:$PATH&quot; &amp;&amp; npm run css:build'"
-          WorkingDirectory="$(MSBuildProjectDirectory)" />
+    <Exec Command="bash -c 'export PATH=&quot;$HOME/.nvm/versions/node/v22.19.0/bin:$PATH&quot; &amp;&amp; npm run css:build'" WorkingDirectory="$(MSBuildProjectDirectory)" />
   </Target>
 
   <PropertyGroup>
