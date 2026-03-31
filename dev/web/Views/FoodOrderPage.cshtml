@@ -16,7 +16,7 @@
     <main>
 
         <!-- Hero -->
-        <section class="relative overflow-hidden bg-primary rounded-[18px] p-10 mb-5 border-b-4 border-accent"
+        <section class="relative overflow-hidden bg-primary rounded-[18px] p-10 mb-10 border-b-4 border-accent"
                  style="background-image: radial-gradient(rgba(255,255,255,0.07) 1px, transparent 1px); background-size: 18px 18px;">
 
             <!-- Activity figure icon (right side, clear of text) -->
@@ -42,7 +42,7 @@
             </div>
 
             <p class="text-xs font-bold tracking-[.12em] text-accent uppercase mb-1.5">@subHeadline</p>
-            <h1 class="font-black text-white leading-none mb-2.5" style="font-size: 5rem; font-family: 'Barlow', sans-serif; font-weight: 800;">@headline</h1>
+            <h1 class="font-black text-white leading-none mb-2.5" style="font-size: 5rem; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800;">@headline</h1>
             @if (!string.IsNullOrWhiteSpace(intro))
             {
                 <p class="text-xl font-semibold text-white mb-4">@intro</p>
@@ -54,7 +54,7 @@
         </section>
 
         <!-- Food grid -->
-        <section class="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-5">
+        <section class="grid grid-cols-2 gap-8 max-sm:grid-cols-1">
             @foreach (var item in foodItems)
             {
                 var name        = item.Name ?? "";
@@ -70,23 +70,23 @@
                          data-name="@Html.Encode(name)"
                          data-price="@price.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)"
                          data-image="@imageUrl">
-                    <div class="w-full aspect-[4/3] overflow-hidden bg-app-bg">
+                    <div class="w-full aspect-square overflow-hidden bg-app-bg">
                         <img class="w-full h-full object-cover block transition-transform duration-300 group-hover:scale-105"
                              src="@imageUrl" alt="@name" />
                     </div>
-                    <div class="p-5 flex flex-col flex-1 gap-2.5">
-                        <div class="flex justify-between items-start gap-2">
-                            <h2 class="text-lg font-extrabold leading-tight text-app-text">@name</h2>
-                            <div class="text-2xl font-extrabold text-price leading-[1.1] text-right whitespace-nowrap shrink-0">
+                    <div class="p-7 flex flex-col flex-1 gap-4">
+                        <div class="flex justify-between items-start gap-3">
+                            <h2 class="text-2xl font-extrabold leading-tight text-app-text">@name</h2>
+                            <div class="text-4xl font-extrabold text-price leading-[1.1] text-right whitespace-nowrap shrink-0">
                                 @price.ToString("N2", new System.Globalization.CultureInfo("da-DK"))
-                                <span class="block text-[.7rem] font-semibold">kr.</span>
+                                <span class="block text-sm font-semibold">kr.</span>
                             </div>
                         </div>
-                        <p class="text-xs text-gray-500 leading-relaxed flex-1">@description</p>
+                        <p class="text-base text-gray-500 leading-relaxed flex-1">@description</p>
                         <button data-add-btn
-                                class="flex items-center justify-center gap-2 bg-primary hover:bg-primary-hover text-white rounded-full text-sm font-bold py-3 px-5 w-full transition-colors active:scale-[.98]"
+                                class="flex items-center justify-center gap-2 bg-primary hover:bg-primary-hover text-white rounded-full text-base font-bold py-4 px-6 w-full transition-colors active:scale-[.98]"
                                 onclick="FoodOrder.add(this.closest('[data-id]'))">
-                            <span class="text-lg leading-none font-light">+</span>
+                            <span class="text-xl leading-none font-light">+</span>
                             Tilføj til bestilling
                         </button>
                     </div>

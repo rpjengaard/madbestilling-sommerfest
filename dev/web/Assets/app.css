@@ -51,7 +51,7 @@
 *, *::before, *::after { box-sizing: border-box; }
 
 body {
-  font-family: 'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   background-color: var(--color-app-bg);
   color: var(--color-app-text);
 }
