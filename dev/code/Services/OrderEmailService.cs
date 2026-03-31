@@ -2,6 +2,7 @@ using System.Net;
 using Madbestilling.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Umbraco.Cms.Core.Mail;
 using Umbraco.Cms.Core.Models.Email;
 
@@ -12,23 +13,37 @@ public class OrderEmailService : IOrderEmailService
     private readonly IEmailSender _emailSender;
     private readonly IConfiguration _configuration;
     private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly ILogger<OrderEmailService> _logger;
 
     public OrderEmailService(
         IEmailSender emailSender,
         IConfiguration configuration,
-        IHttpContextAccessor httpContextAccessor)
+        IHttpContextAccessor httpContextAccessor,
+        ILogger<OrderEmailService> logger)
     {
         _emailSender = emailSender;
         _configuration = configuration;
         _httpContextAccessor = httpContextAccessor;
+        _logger = logger;
     }
 
     public async Task SendUserReceiptAsync(OrderRecord order, IEnumerable<CartItem> items, string mobilePayBoxNr)
     {
         var subject = $"Din bestilling er modtaget – {order.ChildName}";
-        var body = BuildUserReceiptHtml(order, items, mobilePayBoxNr);
-        var message = new EmailMessage(null, order.Email, subject, body, true);
-        await _emailSender.SendAsync(message, emailType: "OrderReceipt");
+        _logger.LogInformation("Sending receipt email for order {OrderId} to {Email}", order.Id, order.Email);
+
+        try
+        {
+            var body = BuildUserReceiptHtml(order, items, mobilePayBoxNr);
+            var message = new EmailMessage(null, order.Email, subject, body, true);
+            await _emailSender.SendAsync(message, emailType: "OrderReceipt");
+            _logger.LogInformation("Receipt email sent successfully for order {OrderId} to {Email}", order.Id, order.Email);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to send receipt email for order {OrderId} to {Email}", order.Id, order.Email);
+            throw;
+        }
     }
 
     public async Task SendAdminNotificationAsync(OrderRecord order, IEnumerable<CartItem> items)
@@ -37,7 +52,11 @@ public class OrderEmailService : IOrderEmailService
             .GetSection("Notifications:Receivers")
             .Get<string[]>() ?? Array.Empty<string>();
 
-        if (receivers.Length == 0) return;
+        if (receivers.Length == 0)
+        {
+            _logger.LogWarning("No admin notification receivers configured — skipping admin email for order {OrderId}", order.Id);
+            return;
+        }
 
         var request = _httpContextAccessor.HttpContext?.Request;
         var baseUrl = request is not null
@@ -47,10 +66,21 @@ public class OrderEmailService : IOrderEmailService
         var subject = $"Ny bestilling: {order.ChildName} ({order.ChildClass})";
         var body = BuildAdminNotificationHtml(order, items, baseUrl);
 
+        _logger.LogInformation("Sending admin notification for order {OrderId} to {Count} receiver(s)", order.Id, receivers.Length);
+
         foreach (var receiver in receivers)
         {
-            var message = new EmailMessage(null, receiver, subject, body, true);
-            await _emailSender.SendAsync(message, emailType: "OrderNotification");
+            try
+            {
+                var message = new EmailMessage(null, receiver, subject, body, true);
+                await _emailSender.SendAsync(message, emailType: "OrderNotification");
+                _logger.LogInformation("Admin notification sent for order {OrderId} to {Receiver}", order.Id, receiver);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send admin notification for order {OrderId} to {Receiver}", order.Id, receiver);
+                throw;
+            }
         }
     }
 
