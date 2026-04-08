@@ -3,25 +3,24 @@ using Madbestilling.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Umbraco.Cms.Core.Mail;
-using Umbraco.Cms.Core.Models.Email;
+using Resend;
 
 namespace Madbestilling.Services;
 
 public class OrderEmailService : IOrderEmailService
 {
-    private readonly IEmailSender _emailSender;
+    private readonly IResend _resend;
     private readonly IConfiguration _configuration;
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly ILogger<OrderEmailService> _logger;
 
     public OrderEmailService(
-        IEmailSender emailSender,
+        IResend resend,
         IConfiguration configuration,
         IHttpContextAccessor httpContextAccessor,
         ILogger<OrderEmailService> logger)
     {
-        _emailSender = emailSender;
+        _resend = resend;
         _configuration = configuration;
         _httpContextAccessor = httpContextAccessor;
         _logger = logger;
@@ -30,13 +29,19 @@ public class OrderEmailService : IOrderEmailService
     public async Task SendUserReceiptAsync(OrderRecord order, IEnumerable<CartItem> items, string mobilePayBoxNr)
     {
         var subject = $"Din bestilling er modtaget – {order.ChildName}";
+        var from = _configuration["Resend:FromAddress"] ?? "Madbestilling <noreply@example.com>";
+
         _logger.LogInformation("Sending receipt email for order {OrderId} to {Email}", order.Id, order.Email);
 
         try
         {
-            var body = BuildUserReceiptHtml(order, items, mobilePayBoxNr);
-            var message = new EmailMessage(null, order.Email, subject, body, true);
-            await _emailSender.SendAsync(message, emailType: "OrderReceipt");
+            var message = new EmailMessage();
+            message.From = from;
+            message.To.Add(order.Email);
+            message.Subject = subject;
+            message.HtmlBody = BuildUserReceiptHtml(order, items, mobilePayBoxNr);
+
+            await _resend.EmailSendAsync(message);
             _logger.LogInformation("Receipt email sent successfully for order {OrderId} to {Email}", order.Id, order.Email);
         }
         catch (Exception ex)
@@ -63,6 +68,7 @@ public class OrderEmailService : IOrderEmailService
             ? $"{request.Scheme}://{request.Host}"
             : string.Empty;
 
+        var from = _configuration["Resend:FromAddress"] ?? "Madbestilling <noreply@example.com>";
         var subject = $"Ny bestilling: {order.ChildName} ({order.ChildClass})";
         var body = BuildAdminNotificationHtml(order, items, baseUrl);
 
@@ -72,8 +78,13 @@ public class OrderEmailService : IOrderEmailService
         {
             try
             {
-                var message = new EmailMessage(null, receiver, subject, body, true);
-                await _emailSender.SendAsync(message, emailType: "OrderNotification");
+                var message = new EmailMessage();
+                message.From = from;
+                message.To.Add(receiver);
+                message.Subject = subject;
+                message.HtmlBody = body;
+
+                await _resend.EmailSendAsync(message);
                 _logger.LogInformation("Admin notification sent for order {OrderId} to {Receiver}", order.Id, receiver);
             }
             catch (Exception ex)
