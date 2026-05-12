@@ -30,6 +30,7 @@ public class OrderEmailService : IOrderEmailService
     {
         var subject = $"Din bestilling er modtaget – {order.ChildName}";
         var from = _configuration["Resend:FromAddress"] ?? "Madbestilling <noreply@example.com>";
+        var replyTo = _configuration["Resend:ReplyTo"];
 
         _logger.LogInformation("Sending receipt email for order {OrderId} to {Email}", order.Id, order.Email);
 
@@ -38,6 +39,10 @@ public class OrderEmailService : IOrderEmailService
             var message = new EmailMessage();
             message.From = from;
             message.To.Add(order.Email);
+            if (!string.IsNullOrWhiteSpace(replyTo))
+            {
+                message.ReplyTo.Add(replyTo);
+            }
             message.Subject = subject;
             message.HtmlBody = BuildUserReceiptHtml(order, items, mobilePayBoxNr);
 
@@ -69,6 +74,7 @@ public class OrderEmailService : IOrderEmailService
             : string.Empty;
 
         var from = _configuration["Resend:FromAddress"] ?? "Madbestilling <noreply@example.com>";
+        var replyTo = _configuration["Resend:ReplyTo"];
         var subject = $"Ny bestilling: {order.ChildName} ({order.ChildClass})";
         var body = BuildAdminNotificationHtml(order, items, baseUrl);
 
@@ -81,6 +87,10 @@ public class OrderEmailService : IOrderEmailService
                 var message = new EmailMessage();
                 message.From = from;
                 message.To.Add(receiver);
+                if (!string.IsNullOrWhiteSpace(replyTo))
+                {
+                    message.ReplyTo.Add(replyTo);
+                }
                 message.Subject = subject;
                 message.HtmlBody = body;
 
