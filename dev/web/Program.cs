@@ -1,4 +1,13 @@
+using Microsoft.AspNetCore.HttpOverrides;
+
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+});
 
 builder.CreateUmbracoBuilder()
     .AddBackOffice()
@@ -13,6 +22,9 @@ WebApplication app = builder.Build();
 
 await app.BootUmbracoAsync();
 
+app.UseForwardedHeaders();
+app.UseHttpsRedirection();
+app.UseHsts();
 
 app.UseUmbraco()
     .WithMiddleware(u =>

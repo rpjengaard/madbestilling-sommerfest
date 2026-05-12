@@ -3,7 +3,8 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
     ViewData["Title"] = "Gennemfør din bestilling";
 
-    var pageSubtitle    = Model.Value<string>("subtitle") ?? "Sommer Festival 2026";
+    var headline        = Model.Value<string>("headline")    ?? "Gennemfør din bestilling";
+    var subHeadline     = Model.Value<string>("subHeadline") ?? "Sommer Festival 2026";
     var mobilePayBoxNr  = Model.Value<string>("mobilePayBoxNumber") ?? "[BOXNUMMER]";
 
     var orderPage = Model.Parent?.Children
@@ -36,9 +37,10 @@
 
             <p class="text-sm text-gray-500">Du modtager en kvittering på e-mail. Husk at betale med MobilePay:</p>
 
-            <div class="bg-[#f4c200] rounded-[16px] p-5 flex flex-col gap-3">
-                <p class="font-black text-[#1a2d5a] text-base">Betal med MobilePay med nedenstående oplysninger</p>
-                <div class="flex flex-col gap-2 text-sm text-[#1a2d5a]">
+            @* [CHANGE: align with flyer palette — peach card + coral accents] Related: Assets/app.css, Views/Shared/_Layout.cshtml, Views/FoodOrderPage.cshtml *@
+            <div class="bg-peach rounded-[16px] p-5 flex flex-col gap-3">
+                <p class="font-black text-primary text-base">Betal med MobilePay med nedenstående oplysninger</p>
+                <div class="flex flex-col gap-2 text-sm text-primary">
                     <div class="flex justify-between">
                         <span class="font-semibold">Box nummer</span>
                         <span class="font-black text-lg tracking-wide">@payBoxNr</span>
@@ -47,7 +49,7 @@
                         <span class="font-semibold">Beløb</span>
                         <span class="font-black text-lg">@payAmount kr.</span>
                     </div>
-                    <div class="border-t border-[#d4a900]/40 pt-2">
+                    <div class="border-t border-primary/20 pt-2">
                         <span class="font-semibold block mb-1">Besked i MobilePay</span>
                         <span class="font-black break-all">@payMessage</span>
                     </div>
@@ -64,7 +66,7 @@
     </div>
 }
 
-<div class="min-h-screen bg-gradient-to-br from-[#edf1fa] to-[#e5ecf7] px-6 py-10">
+<div class="min-h-screen bg-app-bg px-6 py-10">
     <div class="max-w-[1100px] mx-auto">
 
         @if (isSuccess)
@@ -81,8 +83,9 @@
             </svg>
             Tilbage til bestilling
         </a>
-        <h1 class="text-5xl font-black text-[#1e3a6e] mb-1">Gennemfør din bestilling</h1>
-        <p class="text-sm text-gray-400 mb-10">@pageSubtitle</p>
+        <h1 class="text-primary mb-2 leading-none"
+            style="font-family: 'Ostrich Sans', 'Monoton', cursive; font-weight: 700; font-size: clamp(2.5rem, 6vw, 4.5rem); letter-spacing: .03em;">@headline</h1>
+        <p class="display-solid text-primary tracking-[.1em] mb-10">@subHeadline</p>
 
         <div class="grid grid-cols-[1fr_340px] gap-6 items-start max-lg:grid-cols-1">
 
@@ -222,7 +225,7 @@
 
                     <button type="button"
                             id="submitOrderBtn"
-                            class="flex items-center justify-center gap-2 bg-accent hover:bg-yellow-400 text-app-text font-black rounded-full py-3.5 px-5 w-full transition-colors text-sm">
+                            class="flex items-center justify-center gap-2 bg-coral hover:bg-coral-hover text-white font-black rounded-full py-3.5 px-5 w-full transition-colors text-sm uppercase tracking-wide">
                         Send bestilling
                     </button>
 

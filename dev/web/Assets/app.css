@@ -1,16 +1,84 @@
 @import "tailwindcss";
 
+/* [CHANGE: match printed A4 flyer design] Related: Views/Shared/_Layout.cshtml, Views/FoodOrderPage.cshtml, Views/CheckoutPage.cshtml */
+
+@font-face {
+  font-family: "Ostrich Sans";
+  src: url("/fonts/OstrichSansBold.otf") format("opentype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* Tell Tailwind where to scan for class names */
 @source "../Views/**/*.cshtml";
 
-/* ── Brand tokens ─────────────────────────────────────────── */
+/* ── Brand tokens (flyer palette) ─────────────────────────── */
 @theme {
-  --color-primary:       #2d4b8a;
-  --color-primary-hover: #1e3870;
-  --color-price:         #2a52cc;
-  --color-accent:        #f4c200;
-  --color-app-bg:        #eef0f4;
-  --color-app-text:      #1a1a2e;
+  --color-primary:       #1C5577;   /* deep navy header band */
+  --color-primary-hover: #14405a;
+  --color-coral:         #d6533e;   /* flyer outlined text + badges */
+  --color-coral-hover:   #b8442f;
+  --color-price:         #d6533e;
+  --color-accent:        #d6533e;
+  --color-peach:         #f4b7a1;   /* lower flyer band */
+  --color-peach-soft:    #f9d4c4;
+  --color-cream:         #fbf4ee;
+  --color-app-bg:        #f7eee5;
+  --color-app-text:      #1e3a5f;
+
+  --font-display: "Big Shoulders Display", "Plus Jakarta Sans", sans-serif;
+}
+
+/* ── Outlined display headline (like flyer's POKE BOWL / MENU) ── */
+.display-outline {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  line-height: 0.85;
+  -webkit-text-fill-color: transparent;
+  -webkit-text-stroke: 2px currentColor;
+  text-transform: uppercase;
+}
+.display-solid {
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  line-height: 0.9;
+  text-transform: uppercase;
+}
+
+/* Double underline accent used under flyer item names */
+.flyer-underline {
+  position: relative;
+  padding-bottom: 0.6rem;
+}
+.flyer-underline::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 0;
+  border-top: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  padding-top: 3px;
+}
+
+/* Round coral badge (flyer "BOWLS SKAL BESTILLES" / "BETALES MED KLIPPEKORT") */
+.flyer-badge {
+  background-color: var(--color-coral);
+  color: #fff;
+  border-radius: 9999px;
+  aspect-ratio: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  text-transform: uppercase;
+  font-weight: 800;
+  line-height: 1.05;
+  padding: 1rem;
 }
 
 /* ── Hero icon animations ─────────────────────────────────── */
