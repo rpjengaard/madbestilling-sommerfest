@@ -68,10 +68,7 @@ public class OrderEmailService : IOrderEmailService
             return;
         }
 
-        var request = _httpContextAccessor.HttpContext?.Request;
-        var baseUrl = request is not null
-            ? $"{request.Scheme}://{request.Host}"
-            : string.Empty;
+        var baseUrl = "https://mad.codebank.dk";
 
         var from = _configuration["Resend:FromAddress"] ?? "Madbestilling <noreply@example.com>";
         var replyTo = _configuration["Resend:ReplyTo"];
@@ -192,7 +189,7 @@ public class OrderEmailService : IOrderEmailService
     private static string BuildAdminNotificationHtml(OrderRecord order, IEnumerable<CartItem> items, string baseUrl)
     {
         var rows = BuildItemRows(items);
-        var backofficeLink = $"{baseUrl}/umbraco#/bestillinger?orderId={order.Id}";
+        var backofficeLink = $"{baseUrl}/umbraco/section/bestillinger?orderId={order.Id}";
         var createdAt = order.CreatedAt.ToString("dd/MM/yyyy HH:mm");
 
         return $"""

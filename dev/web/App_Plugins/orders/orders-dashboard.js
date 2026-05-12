@@ -102,9 +102,11 @@ class OrdersDashboard extends UmbElementMixin(LitElement) {
     connectedCallback() {
         super.connectedCallback();
         this._loadOrders().then(() => {
-            const hash   = window.location.hash;
-            const params = new URLSearchParams(hash.includes('?') ? hash.slice(hash.indexOf('?') + 1) : '');
-            const id     = parseInt(params.get('orderId') ?? '');
+            // [CHANGE: open order from ?orderId= in either location.search or hash] Related: code/Services/OrderEmailService.cs
+            const searchParams = new URLSearchParams(window.location.search);
+            const hash         = window.location.hash;
+            const hashParams   = new URLSearchParams(hash.includes('?') ? hash.slice(hash.indexOf('?') + 1) : '');
+            const id           = parseInt(searchParams.get('orderId') ?? hashParams.get('orderId') ?? '');
             if (id) {
                 const order = this._orders.find(o => o.id === id);
                 if (order) this._open(order);
