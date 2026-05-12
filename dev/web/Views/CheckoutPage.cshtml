@@ -32,7 +32,7 @@
                     </div>
                     <h2 class="text-xl font-black text-[#1e3a6e]">Bestilling modtaget!</h2>
                 </div>
-                <button onclick="document.getElementById('paymentModal').remove()" class="text-gray-300 hover:text-gray-500 text-2xl leading-none font-light">&times;</button>
+                <button onclick="window.location.href='@backUrl'" class="text-gray-300 hover:text-gray-500 text-2xl leading-none font-light">&times;</button>
             </div>
 
             <p class="text-sm text-gray-500">Du modtager en kvittering på e-mail. Husk at betale med MobilePay:</p>
@@ -58,7 +58,7 @@
 
             <p class="text-xs text-gray-400 text-center">Husk den korrekte besked, så vi kan identificere din betaling ved afhentning.</p>
 
-            <button onclick="document.getElementById('paymentModal').remove()"
+            <button onclick="window.location.href='@backUrl'"
                     class="bg-[#2d4b8a] hover:bg-[#1e3870] text-white font-bold text-sm py-3 px-8 rounded-full transition-colors w-full">
                 Forstået – luk
             </button>

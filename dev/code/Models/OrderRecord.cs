@@ -49,4 +49,10 @@ public class OrderRecord
     [Column("createdAt")]
     [NullSetting(NullSetting = NullSettings.NotNull)]
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+    // [CHANGE: add note field for "Problem" status]  Related: Migrations/AddNoteColumnMigration.cs, Controllers/OrdersApiController.cs, App_Plugins/orders/orders-dashboard.js
+    [Column("note")]
+    [SpecialDbType(SpecialDbTypes.NVARCHARMAX)]
+    [NullSetting(NullSetting = NullSettings.Null)]
+    public string? Note { get; set; }
 }

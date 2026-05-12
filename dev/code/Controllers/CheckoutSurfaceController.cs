@@ -88,6 +88,33 @@ public class CheckoutSurfaceController : SurfaceController
         var orderId = _orderRepository.CreateOrder(order);
         order.Id = orderId;
 
+        var itemSummary = string.Join(", ", cartItems.Select(i => $"{i.Qty}x {i.Name} @ {i.Price:F2}"));
+        _logger.LogInformation(
+            "Order {OrderId} created at {CreatedAt:O} | child={ChildName} class={ChildClass} phone={Phone} email={Email} | total={Total:F2} status={Status} mobilePayBox={MobilePayBox} itemCount={ItemCount} items=[{Items}]",
+            order.Id,
+            order.CreatedAt,
+            order.ChildName,
+            order.ChildClass,
+            order.Phone,
+            order.Email,
+            order.TotalAmount,
+            order.Status,
+            mobilePayBoxNr,
+            cartItems.Count,
+            itemSummary);
+
+        foreach (var item in cartItems)
+        {
+            _logger.LogInformation(
+                "Order {OrderId} line | id={ItemId} name={ItemName} qty={Qty} unitPrice={UnitPrice:F2} lineTotal={LineTotal:F2}",
+                order.Id,
+                item.Id,
+                item.Name,
+                item.Qty,
+                item.Price,
+                item.Price * item.Qty);
+        }
+
         try
         {
             await _emailService.SendUserReceiptAsync(order, cartItems, mobilePayBoxNr);

@@ -41,7 +41,7 @@ public class OrderEmailService : IOrderEmailService
             message.To.Add(order.Email);
             if (!string.IsNullOrWhiteSpace(replyTo))
             {
-                message.ReplyTo.Add(replyTo);
+                message.ReplyTo = new EmailAddressList { replyTo };
             }
             message.Subject = subject;
             message.HtmlBody = BuildUserReceiptHtml(order, items, mobilePayBoxNr);
@@ -89,7 +89,7 @@ public class OrderEmailService : IOrderEmailService
                 message.To.Add(receiver);
                 if (!string.IsNullOrWhiteSpace(replyTo))
                 {
-                    message.ReplyTo.Add(replyTo);
+                    message.ReplyTo = new EmailAddressList { replyTo };
                 }
                 message.Subject = subject;
                 message.HtmlBody = body;

@@ -3,8 +3,9 @@ import { UmbElementMixin } from '@umbraco-cms/backoffice/element-api';
 
 const API = '/umbraco/api/madbestilling/orders';
 
-const STATUS_LABELS = { 'ny': 'Ny order', 'betaling-godkendt': 'Betaling godkendt', 'klar-til-afhentning': 'Klar til afhentning' };
-const STATUS_COLORS = { 'ny': '#f59e0b', 'betaling-godkendt': '#2d4b8a', 'klar-til-afhentning': '#16a34a' };
+// [CHANGE: new status set] Related: Controllers/OrdersApiController.cs, Models/OrderRecord.cs
+const STATUS_LABELS = { 'ny': 'Ny order', 'order-betalt': 'Order betalt', 'problem': 'Problem' };
+const STATUS_COLORS = { 'ny': '#f59e0b', 'order-betalt': '#16a34a', 'problem': '#dc2626' };
 
 class OrdersDashboard extends UmbElementMixin(LitElement) {
     static properties = {
@@ -22,6 +23,11 @@ class OrdersDashboard extends UmbElementMixin(LitElement) {
         :host { display: block; padding: 28px; font-family: var(--uui-font-family, Arial, sans-serif); }
 
         h1 { font-size: 1.5rem; font-weight: 900; color: #2d4b8a; margin: 0 0 20px; }
+
+        .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .toolbar h1 { margin: 0; }
+        .btn-export { background: #16a34a; color: #fff; font-weight: 700; font-size: .85rem; padding: 10px 22px; border: none; border-radius: 100px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: background .15s; }
+        .btn-export:hover { background: #15803d; }
 
         .error { color: #dc2626; padding: 12px; background: #fef2f2; border-radius: 8px; font-size: .85rem; }
 
@@ -52,7 +58,7 @@ class OrdersDashboard extends UmbElementMixin(LitElement) {
         .items-table tr:last-child td { border-bottom: none; }
 
         label.field-label { font-size: .75rem; font-weight: 700; color: #2d4b8a; text-transform: uppercase; letter-spacing: .06em; display: block; margin-bottom: 6px; }
-        select, input.field-input { width: 100%; padding: 10px 14px; border: 1px solid #ddd; border-radius: 8px; font-size: .875rem; box-sizing: border-box; }
+        select, input.field-input, textarea.field-input { width: 100%; padding: 10px 14px; border: 1px solid #ddd; border-radius: 8px; font-size: .875rem; box-sizing: border-box; font-family: inherit; resize: vertical; }
         input.field-input { margin-top: 0; }
 
         .btn-save { background: #2d4b8a; color: #fff; font-weight: 700; font-size: .875rem; padding: 12px 28px; border: none; border-radius: 100px; cursor: pointer; width: 100%; transition: background .15s; }
@@ -124,7 +130,7 @@ class OrdersDashboard extends UmbElementMixin(LitElement) {
         this._selected      = order;
         this._editMode      = false;
         this._confirmDelete = false;
-        this._editFields    = { childName: order.childName, childClass: order.childClass, phone: order.phone, email: order.email, status: order.status };
+        this._editFields    = { childName: order.childName, childClass: order.childClass, phone: order.phone, email: order.email, status: order.status, note: order.note ?? '' };
     }
 
     _close() {
@@ -193,9 +199,18 @@ class OrdersDashboard extends UmbElementMixin(LitElement) {
 
     _cart(json) { try { return JSON.parse(json) || []; } catch { return []; } }
 
+    _exportExcel() {
+        window.location.href = `${API}/ExportOrders`;
+    }
+
     render() {
         return html`
-            <h1>Bestillinger</h1>
+            <div class="toolbar">
+                <h1>Bestillinger</h1>
+                <button class="btn-export" @click=${this._exportExcel} title="Download alle bestillinger som Excel">
+                    📊 Download Excel
+                </button>
+            </div>
 
             ${this._error ? html`<p class="error">${this._error}</p>` : ''}
 
@@ -269,10 +284,19 @@ class OrdersDashboard extends UmbElementMixin(LitElement) {
                                         <label class="field-label">Status</label>
                                         <select .value=${this._editFields.status} @change=${e => this._field('status', e.target.value)}>
                                             <option value="ny">Ny order</option>
-                                            <option value="betaling-godkendt">Betaling godkendt</option>
-                                            <option value="klar-til-afhentning">Klar til afhentning</option>
+                                            <option value="order-betalt">Order betalt</option>
+                                            <option value="problem">Problem</option>
                                         </select>
                                     </div>
+                                    ${this._editFields.status === 'problem' ? html`
+                                        <div class="field-group">
+                                            <label class="field-label">Beskrivelse af problem</label>
+                                            <textarea class="field-input" rows="4"
+                                                      .value=${this._editFields.note}
+                                                      @input=${e => this._field('note', e.target.value)}
+                                                      placeholder="Beskriv hvad der er galt med ordren eller betalingen..."></textarea>
+                                        </div>
+                                    ` : ''}
                                 </div>
                             </div>
 
@@ -302,6 +326,13 @@ class OrdersDashboard extends UmbElementMixin(LitElement) {
                                     </span>
                                 </div>
                             </div>
+
+                            ${this._selected.status === 'problem' && this._selected.note ? html`
+                                <div class="confirm-box">
+                                    <p style="color:#7f1d1d;font-weight:700;">Problem beskrivelse</p>
+                                    <p style="margin:0;font-size:.85rem;color:#7f1d1d;font-weight:500;white-space:pre-wrap;">${this._selected.note}</p>
+                                </div>
+                            ` : ''}
 
                             <div>
                                 <p class="section-title">Bestilte retter</p>

@@ -45,8 +45,8 @@ public class OrderRepository : IOrderRepository
     {
         using var scope = _scopeProvider.CreateScope();
         scope.Database.Execute(
-            "UPDATE madbestilling_orders SET childName=@0, childClass=@1, phone=@2, email=@3, status=@4 WHERE id=@5",
-            order.ChildName, order.ChildClass, order.Phone, order.Email, order.Status, order.Id);
+            "UPDATE madbestilling_orders SET childName=@0, childClass=@1, phone=@2, email=@3, status=@4, note=@5 WHERE id=@6",
+            order.ChildName, order.ChildClass, order.Phone, order.Email, order.Status, (object?)order.Note ?? DBNull.Value, order.Id);
         scope.Complete();
     }
 
