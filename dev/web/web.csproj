@@ -4,6 +4,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <CompressionEnabled>false</CompressionEnabled> <!-- Disable compression. E.g. for umbraco backoffice files. These files should be precompressed by node and not let dotnet handle it -->
+    <!-- Exclude the local publish output folder from project sources so re-publishing doesn't pick up its own stale files -->
+    <DefaultItemExcludes>$(DefaultItemExcludes);publish\**;publish.zip</DefaultItemExcludes>
   </PropertyGroup>
 
   <ItemGroup>
