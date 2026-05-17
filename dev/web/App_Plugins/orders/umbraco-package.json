@@ -4,6 +4,31 @@
   "version": "1.0.0",
   "extensions": [
     {
+      "type": "backofficeEntryPoint",
+      "alias": "Madbestilling.EntryPoint",
+      "name": "Madbestilling Entry Point",
+      "js": "/App_Plugins/orders/entry-point.js"
+    },
+    {
+      "type": "dashboard",
+      "alias": "Madbestilling.Dashboard.ContentStats",
+      "name": "Statistik",
+      "elementName": "content-stats-dashboard",
+      "js": "/App_Plugins/orders/content-stats-dashboard.js",
+      "weight": 9999,
+      "meta": {
+        "label": "Statistik",
+        "pathname": "statistik",
+        "weight": 9999
+      },
+      "conditions": [
+        {
+          "alias": "Umb.Condition.SectionAlias",
+          "match": "Umb.Section.Content"
+        }
+      ]
+    },
+    {
       "type": "section",
       "alias": "Madbestilling.Section.Orders",
       "name": "Bestillinger",

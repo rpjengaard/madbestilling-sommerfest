@@ -127,10 +127,44 @@
     </main>
 
     <!-- ═══════════════════════════════════════ SIDEBAR ══ -->
-    <aside class="sticky top-6 max-lg:order-first">
-        <div class="bg-cream rounded-[20px] shadow-sm p-5 flex flex-col gap-4 border border-peach-soft">
+    <aside class="lg:sticky lg:top-6 max-lg:order-first max-lg:sticky max-lg:top-3 max-lg:z-40">
 
-            <header class="flex items-center gap-4 pb-4 border-b border-peach-soft">
+        <style>
+            @@media (max-width: 1023.98px) {
+                #cartPanel { display: none; }
+                #cartPanel.cart-mobile-open { display: flex; }
+            }
+        </style>
+
+        <!-- Mobile collapsed bar (only visible <lg, only when cart has items) -->
+        <div id="cartMobileBar" class="lg:hidden bg-cream border border-peach-soft shadow-md rounded-2xl" hidden>
+            <button type="button" id="cartMobileToggle"
+                    class="w-full flex items-center gap-3 text-left min-w-0 py-3 px-4"
+                    aria-expanded="false" aria-controls="cartPanel">
+                <span class="bg-coral text-white w-11 h-11 rounded-full flex items-center justify-center shrink-0 shadow-sm">
+                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <circle cx="9" cy="20" r="1.5"/>
+                        <circle cx="17" cy="20" r="1.5"/>
+                        <path d="M3 3h2.2l2.5 12a2 2 0 0 0 2 1.6h7.6a2 2 0 0 0 2-1.5L20.5 8H6.2"/>
+                    </svg>
+                </span>
+                <span class="flex flex-col min-w-0 flex-1 gap-1.5">
+                    <span class="text-[.65rem] font-semibold uppercase tracking-wide text-primary/60 leading-none">
+                        <span id="cartMobileCount">0</span> varer
+                    </span>
+                    <span class="display-solid text-xl text-coral leading-none">
+                        <span id="cartMobileTotal">0,00</span><span class="text-xs font-semibold"> kr.</span>
+                    </span>
+                </span>
+                <svg id="cartChevron" class="w-4 h-4 text-primary transition-transform shrink-0" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+        </div>
+
+        <div id="cartPanel" class="bg-cream rounded-[20px] shadow-sm p-5 flex flex-col gap-4 border border-peach-soft max-lg:mt-3">
+
+            <header class="flex items-center gap-4 pb-4 border-b border-peach-soft max-lg:hidden">
                 <span class="flyer-badge w-14 h-14 shrink-0 text-[.6rem] tracking-[.1em]">
                     BESTIL
                 </span>
@@ -167,7 +201,7 @@
         </div>
 
         <!-- Samvær credit -->
-        <a href="https://samvaerkolding.dk" target="_blank" rel="noopener"
+        <a href="https://www.facebook.com/p/Samv%C3%A6r-61574211925544/?locale=da_DK" target="_blank" rel="noopener"
            class="mt-6 hidden lg:flex flex-col items-center text-center text-xs text-primary/60">
             <span class="block mb-2 uppercase tracking-[.15em] font-semibold">PokeBowls leveres af</span>
             <img src="/img/samvaer-logo.png" alt="Samvær – Gastronomi, Møder, Selskaber"
@@ -210,13 +244,17 @@ const FoodOrder = (() => {
     }
 
     function render() {
-        const list       = document.getElementById('cartList');
-        const empty      = document.getElementById('cartEmpty');
-        const totals     = document.getElementById('cartTotals');
-        const checkout   = document.getElementById('checkoutBtn');
-        const subtotalEl = document.getElementById('cartSubtotal');
-        const totalEl    = document.getElementById('cartTotal');
-        const tpl        = document.getElementById('cartItemTpl');
+        const list        = document.getElementById('cartList');
+        const empty       = document.getElementById('cartEmpty');
+        const totals      = document.getElementById('cartTotals');
+        const checkout    = document.getElementById('checkoutBtn');
+        const subtotalEl  = document.getElementById('cartSubtotal');
+        const totalEl     = document.getElementById('cartTotal');
+        const tpl         = document.getElementById('cartItemTpl');
+        const mobileBar   = document.getElementById('cartMobileBar');
+        const mobileCount = document.getElementById('cartMobileCount');
+        const mobileTotal = document.getElementById('cartMobileTotal');
+        const panel       = document.getElementById('cartPanel');
 
         list.innerHTML = '';
 
@@ -224,17 +262,24 @@ const FoodOrder = (() => {
             empty.hidden    = false;
             totals.hidden   = true;
             checkout.hidden = true;
+            mobileBar.hidden = true;
+            panel.classList.remove('cart-mobile-open');
+            const toggle = document.getElementById('cartMobileToggle');
+            if (toggle) toggle.setAttribute('aria-expanded', 'false');
             return;
         }
 
         empty.hidden    = true;
         totals.hidden   = false;
         checkout.hidden = false;
+        mobileBar.hidden = false;
 
         let total = 0;
+        let qtyTotal = 0;
 
         cart.forEach(item => {
             total += item.price * item.qty;
+            qtyTotal += item.qty;
             const fragment = tpl.content.cloneNode(true);
             const li  = fragment.querySelector('li');
             const img = fragment.querySelector('img');
@@ -250,7 +295,21 @@ const FoodOrder = (() => {
 
         subtotalEl.textContent = formatDKK(total) + ' KR.';
         totalEl.innerHTML      = formatDKK(total) + '<span class="text-sm font-semibold"> kr.</span>';
+        mobileCount.textContent = qtyTotal;
+        mobileTotal.textContent = formatDKK(total);
     }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const toggle  = document.getElementById('cartMobileToggle');
+        const panel   = document.getElementById('cartPanel');
+        const chevron = document.getElementById('cartChevron');
+        if (!toggle || !panel) return;
+        toggle.addEventListener('click', () => {
+            const open = panel.classList.toggle('cart-mobile-open');
+            toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+            if (chevron) chevron.style.transform = open ? 'rotate(180deg)' : '';
+        });
+    });
 
     function add(cardEl) {
         const { id, name, price, image } = cardEl.dataset;

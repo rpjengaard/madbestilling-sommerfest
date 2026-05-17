@@ -31,6 +31,14 @@ class OrdersDashboard extends UmbElementMixin(LitElement) {
 
         .error { color: #dc2626; padding: 12px; background: #fef2f2; border-radius: 8px; font-size: .85rem; }
 
+        .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
+        .stat-card { background: #fff; border-radius: 12px; padding: 18px 22px; box-shadow: 0 1px 6px rgba(0,0,0,.07); display: flex; flex-direction: column; gap: 6px; border-left: 4px solid #2d4b8a; }
+        .stat-card.paid { border-left-color: #16a34a; }
+        .stat-card.pending { border-left-color: #f59e0b; }
+        .stat-label { font-size: .7rem; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: .07em; }
+        .stat-value { font-size: 1.5rem; font-weight: 900; color: #2d4b8a; }
+        .stat-meta { font-size: .72rem; color: #9ca3af; font-weight: 600; }
+
         table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 6px rgba(0,0,0,.07); }
         th { background: #2d4b8a; color: #fff; text-align: left; padding: 12px 16px; font-size: .72rem; text-transform: uppercase; letter-spacing: .07em; white-space: nowrap; }
         td { padding: 12px 16px; font-size: .85rem; border-bottom: 1px solid #f0f4fb; }
@@ -201,6 +209,32 @@ class OrdersDashboard extends UmbElementMixin(LitElement) {
 
     _cart(json) { try { return JSON.parse(json) || []; } catch { return []; } }
 
+    _renderStats() {
+        const all   = this._orders;
+        const paid  = all.filter(o => o.status === 'order-betalt');
+        const other = all.filter(o => o.status !== 'order-betalt');
+        const sum   = list => list.reduce((s, o) => s + Number(o.totalAmount || 0), 0);
+        return html`
+            <div class="stats">
+                <div class="stat-card">
+                    <span class="stat-label">Alle bestillinger</span>
+                    <span class="stat-value">${this._dkk(sum(all))} kr.</span>
+                    <span class="stat-meta">${all.length} ${all.length === 1 ? 'ordre' : 'ordrer'}</span>
+                </div>
+                <div class="stat-card paid">
+                    <span class="stat-label">Order betalt</span>
+                    <span class="stat-value">${this._dkk(sum(paid))} kr.</span>
+                    <span class="stat-meta">${paid.length} ${paid.length === 1 ? 'ordre' : 'ordrer'}</span>
+                </div>
+                <div class="stat-card pending">
+                    <span class="stat-label">Udestående</span>
+                    <span class="stat-value">${this._dkk(sum(other))} kr.</span>
+                    <span class="stat-meta">${other.length} ${other.length === 1 ? 'ordre' : 'ordrer'}</span>
+                </div>
+            </div>
+        `;
+    }
+
     _exportExcel() {
         window.location.href = `${API}/ExportOrders`;
     }
@@ -219,12 +253,14 @@ class OrdersDashboard extends UmbElementMixin(LitElement) {
             ${this._loading
                 ? html`<p>Indlæser...</p>`
                 : html`
+                ${this._renderStats()}
                 <table>
                     <thead>
                         <tr>
                             <th>#</th>
                             <th>Barn</th>
                             <th>Klasse</th>
+                            <th>Mobil</th>
                             <th>Total</th>
                             <th>Status</th>
                             <th>Tidspunkt</th>
@@ -236,6 +272,7 @@ class OrdersDashboard extends UmbElementMixin(LitElement) {
                                 <td>${o.id}</td>
                                 <td>${o.childName}</td>
                                 <td>${o.childClass}</td>
+                                <td>${o.phone}</td>
                                 <td>${this._dkk(o.totalAmount)} kr.</td>
                                 <td>
                                     <span class="badge" style="background:${STATUS_COLORS[o.status] ?? '#999'}">
