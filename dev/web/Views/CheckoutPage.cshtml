@@ -194,10 +194,17 @@
                     </div>
                 </div>
 
+                <!-- Mobile submit (sidebar's "Send bestilling" is not visible when scrolled past on mobile) -->
+                <button type="button"
+                        id="submitOrderBtnMobile"
+                        class="lg:hidden flex items-center justify-center gap-2 bg-coral hover:bg-coral-hover text-white font-black rounded-full py-4 px-5 w-full transition-colors text-sm uppercase tracking-wide shadow-md">
+                    Send bestilling
+                </button>
+
             </div>
 
             <!-- ═══════════════════════ RIGHT SIDEBAR ══ -->
-            <aside class="sticky top-6 max-lg:order-first">
+            <aside class="lg:sticky lg:top-6 max-lg:order-first">
                 <div class="bg-primary rounded-[20px] p-6 text-white flex flex-col gap-5">
 
                     <header class="flex items-center gap-4">
@@ -373,7 +380,12 @@
         setError('emailConfirmError', emailConfirmInvalid);
 
         if (childNameInvalid || childClassInvalid || phoneInvalid || emailInvalid || emailConfirmInvalid) {
-            document.querySelector('[id$="Error"]:not(.hidden)')?.previousElementSibling?.focus();
+            const firstErrorEl = document.querySelector('[id$="Error"]:not(.hidden)');
+            const firstInvalidInput = firstErrorEl?.previousElementSibling;
+            if (firstInvalidInput) {
+                firstInvalidInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                firstInvalidInput.focus({ preventScroll: true });
+            }
             return;
         }
 
@@ -393,6 +405,7 @@
     }
 
     document.getElementById('submitOrderBtn').addEventListener('click', validateAndSubmit);
+    document.getElementById('submitOrderBtnMobile').addEventListener('click', validateAndSubmit);
     render();
 })();
 </script>
